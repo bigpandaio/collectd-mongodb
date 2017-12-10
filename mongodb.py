@@ -98,6 +98,17 @@ class MongoDB(object):
             self.accesses = index_counters['accesses']
             self.misses = index_counters['misses']
 
+        # wiredTiger
+        if 'wiredTiger' in server_status:
+            cache_info = server_status['wiredTiger']['cache']
+            cache_size = cache_info['maximum bytes configured']
+            bytes_used = cache_info['bytes currently in the cache']
+            dirty_bytes = cache_info['tracked dirty bytes in the cache']
+            used_pct = float(bytes_used)/cache_size
+            dirty_pct = float(dirty_bytes)/cache_size
+            self.submit('wiredTiger_cache', 'used', used_pct*100);
+            self.submit('wiredTiger_cache', 'dirty', dirty_pct*100);
+
         for mongo_db in self.mongo_db:
             db = con[mongo_db]
             if self.mongo_user and self.mongo_password:
